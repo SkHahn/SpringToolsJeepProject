@@ -3,6 +3,8 @@ package com.promineotech.jeep.controller;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import java.util.List;
+import java.util.Map;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
@@ -21,10 +23,13 @@ import com.promineotech.jeep.controller.support.FetchJeepTestSupport;
 
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
-@Sql(scripts = {"classpath:flyway/migrations/V1.0__Jeep_Schema.sql,", "classpath:flyway/migrations/V1.1__Jeep_Data.sql,"},
+@Sql(scripts = {"classpath:/jeep-sales/src/test/flyway/migrations/V1.0__Jeep_Schema.sql,", "classpath:/jeep-sales/src/test/flyway/migrations/V1.1__Jeep_Data.sql,"},
 				config = @SqlConfig(encoding = "utf-8"))
 class FetchJeepTest extends FetchJeepTestSupport {
 
+	/**
+	 * 1
+	 */
 	@Test
 	void testThatJeepsAreReturnedWhenAValidModelAndTrimAreSupplied() {
 		//Given: a valid model, trim and URI
@@ -40,9 +45,12 @@ class FetchJeepTest extends FetchJeepTestSupport {
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 		
 		//And: the actual list is the same as the expected list
+		List<Jeep> actual = response.getBody();
 		List<Jeep> expected = buildExpected();
-		assertThat(response.getBody()).isEqualTo(expected);
+		
+		actual.forEach(Jeep -> Jeep.setModelPK(null));
+		
+		assertThat(actual).isEqualTo(expected);
 	}
 
-	
 }
